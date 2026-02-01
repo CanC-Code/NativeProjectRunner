@@ -2,33 +2,39 @@
 name: Android Build
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up JDK
+      # Step 2: Set up JDK 17
+      - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
+      # Step 3: Install ImageMagick for asset preparation
       - name: Install ImageMagick
         run: sudo apt-get update && sudo apt-get install -y imagemagick
 
+      # Step 4: Prepare project assets
       - name: Prepare Assets
         run: bash runtime/prepare_assets.sh
 
+      # Step 5: Build APK
       - name: Build APK
         run: ./Android/gradlew :app:assembleDebug --no-daemon
 
+      # Step 6: Upload APK artifact (fixed to v4)
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: NativeProjectRunner-debug-apk
           path: Android/app/build/outputs/apk/debug/app-debug.apk

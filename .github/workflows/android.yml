@@ -1,38 +1,52 @@
-# NativeProjectRunner/.github/workflows/android.yml
 name: Android Build
 
 on:
-  workflow_dispatch: # Manual trigger only
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up JDK 17
+      # 2️⃣ Set up JDK 17
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
-      # Step 3: Install ImageMagick for asset preparation
+      # 3️⃣ Install ImageMagick
       - name: Install ImageMagick
         run: sudo apt-get update && sudo apt-get install -y imagemagick
 
-      # Step 4: Prepare project assets
+      # 4️⃣ Prepare project assets
       - name: Prepare Assets
         run: bash runtime/prepare_assets.sh
 
-      # Step 5: Build APK
+      # 5️⃣ Make gradlew executable (fixes permission errors)
+      - name: Make gradlew executable
+        run: chmod +x ./Android/gradlew
+
+      # 6️⃣ Cache Gradle dependencies to speed up builds
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper/
+          key: gradle-cache-${{ runner.os }}-${{ hashFiles('Android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-cache-${{ runner.os }}-
+
+      # 7️⃣ Build APK
       - name: Build APK
         run: ./Android/gradlew :app:assembleDebug --no-daemon
 
-      # Step 6: Upload APK artifact (fixed to v4)
+      # 8️⃣ Upload APK artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

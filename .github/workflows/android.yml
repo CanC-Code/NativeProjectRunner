@@ -8,30 +8,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up JDK 17
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Install ImageMagick
       - name: Install ImageMagick
         run: sudo apt-get update && sudo apt-get install -y imagemagick
 
-      # 4️⃣ Prepare project assets
       - name: Prepare Assets
         run: bash runtime/prepare_assets.sh
 
-      # 5️⃣ Make gradlew executable (fixes permission errors)
       - name: Make gradlew executable
         run: chmod +x ./Android/gradlew
 
-      # 6️⃣ Cache Gradle dependencies to speed up builds
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
@@ -42,11 +36,10 @@ jobs:
           restore-keys: |
             gradle-cache-${{ runner.os }}-
 
-      # 7️⃣ Build APK
       - name: Build APK
-        run: ./Android/gradlew :app:assembleDebug --no-daemon
+        run: ./gradlew :app:assembleDebug --no-daemon
+        working-directory: ./Android
 
-      # 8️⃣ Upload APK artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
